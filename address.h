@@ -29,28 +29,37 @@ int requestPerSecond = 0;
 
 int **diskArray;           //子阵列对应的 磁盘号
 int **offsetArray;         //子阵列对应的 偏移量（分区号）
-int **diskRegion;           //每个disk包含的Region号
+int **diskRegion;          //每个disk包含的Region号
 
 void makeSubRAID(struct addr_info *ainfo);
 
 
 void init_parameters(struct addr_info *ainfo) {
+    // strip_size表示Chunk的存储空间有多大（KB），BLOCK表示每个block的存储空间有多大(Chunk里有很多Block)
+    // 所以block_per_strip表示一个Chunk有多少block
     ainfo->blocks_per_strip = ainfo->strip_size / BLOCK;
 
+    // 将capacity取整为Chunk大小的整数倍
     ainfo->capacity /= ainfo->strip_size;
     ainfo->capacity *= ainfo->strip_size;
    
     ainfo->stripe_nums = 1;
     
     if (ainfo->method == 0) {   //RAID5
+        // 将capacity从容量转变为能存储的Chunk的数量
         ainfo->capacity /= ainfo->strip_size;
 
+        // strips_partition是将整个capacity以整个Chunk的大小为单位进行划分，能划分的数量
         ainfo->strips_partition = ainfo->capacity;
+        // blocks_partition是将整个capacity以整个BLOCK的大小为单位进行划分，能划分的数量
         ainfo->blocks_partition = ainfo->strips_partition * ainfo->blocks_per_strip;
 
+        // 恢复capacity
         ainfo->capacity *= ainfo->strip_size;
 
+        // 将磁盘数取整为k的整数倍，此处k等于RAID5里的条带宽度
         ainfo->disk_nums = ainfo->disk_nums / ainfo->k * ainfo->k;
+        // 目前理解的capacity_total是每个子RAID down了一个磁盘后，所有剩余RAID的磁盘上能存储的block数
         ainfo->capacity_total = ainfo->capacity / BLOCK * ainfo->disk_nums / ainfo->k * (ainfo->k - 1);
     } else if (ainfo->method == 1) {    //OI-RAID
         ainfo->stripe_nums = ainfo->v * ainfo->g * ainfo->r * (ainfo->g - 1) / ainfo->k;
@@ -145,6 +154,7 @@ void init_parameters(struct addr_info *ainfo) {
 }
 
 void init_addr_info(struct addr_info *ainfo) {
+    // 初始化BIBD的参数，通过读.bd文件获得BIBD的所有参数
     char fn[128];
     sprintf(fn, "%d.%d.bd", ainfo->v, ainfo->k);
     FILE *bibd_f = fopen(fn, "r");
@@ -176,19 +186,21 @@ void init_addr_info(struct addr_info *ainfo) {
     else if (ainfo->method == 4)
         region_nums = ainfo->r;
 
-        diskArray = (typeof(diskArray)) malloc(sizeof(typeof(*diskArray)) * stripe_nums);
-        offsetArray = (typeof(offsetArray)) malloc(sizeof(typeof(*offsetArray)) * stripe_nums);
+    // diskArray和offsetArray：二维数组，第一维是条带数，第二维是条带宽度
+    diskArray = (typeof(diskArray)) malloc(sizeof(typeof(*diskArray)) * stripe_nums);
+    offsetArray = (typeof(offsetArray)) malloc(sizeof(typeof(*offsetArray)) * stripe_nums);
 
-        for (i = 0; i < stripe_nums; i++) {
-            diskArray[i] = (typeof(*diskArray)) malloc(sizeof(typeof(**diskArray)) * ainfo->k);
-            offsetArray[i] = (typeof(*offsetArray)) malloc(sizeof(typeof(**offsetArray)) * ainfo->k);
-        }
+    for (i = 0; i < stripe_nums; i++) {
+        diskArray[i] = (typeof(*diskArray)) malloc(sizeof(typeof(**diskArray)) * ainfo->k);
+        offsetArray[i] = (typeof(*offsetArray)) malloc(sizeof(typeof(**offsetArray)) * ainfo->k);
+    }
 
-        diskRegion = (typeof(diskRegion)) malloc(sizeof(typeof(*diskRegion)) * ainfo->disk_nums);
+    // diskRegion：二维数组，第一维是磁盘数，第二维是每个磁盘拥有的region数
+    diskRegion = (typeof(diskRegion)) malloc(sizeof(typeof(*diskRegion)) * ainfo->disk_nums);
 
-        for (i = 0; i < ainfo->disk_nums; i++) {
-            diskRegion[i] = (typeof(*diskRegion)) malloc(sizeof(typeof(**diskRegion)) * region_nums);
-        }
+    for (i = 0; i < ainfo->disk_nums; i++) {
+        diskRegion[i] = (typeof(*diskRegion)) malloc(sizeof(typeof(**diskRegion)) * region_nums);
+    }
 
     int **bibd, **spd;
     bibd = (typeof(bibd)) malloc(sizeof(typeof(*bibd)) * ainfo->b);
@@ -660,7 +672,6 @@ void raid5_online_recover(struct thr_info *tip) {
 
     long long processed_stripes = 0;
 
-
     struct addr_info *ainfo = tip->ainfo;
     int i, j, k, m;
 
@@ -686,6 +697,7 @@ void raid5_online_recover(struct thr_info *tip) {
         j++;
     }
 
+    // 分成100批完成所有重构任务，每批完成step个chunk的重构
     int max = 100;
     int step = (int) (ainfo->strips_partition / 100.0);
 
@@ -698,6 +710,7 @@ void raid5_online_recover(struct thr_info *tip) {
     fprintf(stderr, "start recover [raid5], total size %fGB\n", ainfo->strips_partition * ainfo->strip_size * 1.0f / 1024 / 1024 / 1024);
 
     for(i = 0; i < 1; i++) {
+        // 共有strips_partition个任务
         for(j = 0; j < ainfo->strips_partition; j++) {
             if ((i * ainfo->strips_partition + j) % step == 0) {
                 int cur = (i * ainfo->strips_partition + j) / step;
@@ -1125,8 +1138,11 @@ void s2_raid_online_recover(struct thr_info *tip) {
 
     struct addr_info *ainfo = tip->ainfo;
     int i, j, k, n, m;
+    // down的磁盘上的所有PARTITION
     int *subRAID = (typeof(subRAID)) malloc(sizeof(typeof(*subRAID)) * ainfo->g2);  //需要修复的6个PARTITION
 
+    // disks:二维数组，第一维是需要修复的PARTITION，第二维是修复这些PARTITION对应的需要读取的src disk
+    // offset：同上，不过代表的是偏移
     int **disks, **offsets; //6个PARTITION分别对应的存活磁盘和偏移
 
     disks = (typeof(disks)) malloc(sizeof(typeof(*disks)) * ainfo->g2);
@@ -1136,7 +1152,6 @@ void s2_raid_online_recover(struct thr_info *tip) {
         disks[i] = (typeof(*disks)) malloc(sizeof(typeof(**disks)) * (ainfo->k - 1));
         offsets[i] = (typeof(*offsets)) malloc(sizeof(typeof(**offsets)) * (ainfo->k - 1));
     }
-
 
     int hostName, logicAddr, size;
     char op;
@@ -1155,7 +1170,6 @@ void s2_raid_online_recover(struct thr_info *tip) {
             disks[i][j] = diskArray[subRAID[i]][k];
             offsets[i][j] = offsetArray[subRAID[i]][k];
             j++;
-
         }
     }
 

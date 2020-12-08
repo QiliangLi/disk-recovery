@@ -709,6 +709,8 @@ static void tip_init(struct thr_info *tip) {
     pthread_mutex_init(&tip->mutex, NULL);
     pthread_cond_init(&tip->cond, NULL);
 
+    // printf("tip_init-part1\n");
+
     if (io_setup(naios, &tip->ctx)) {
         fatal("io_setup", ERR_SYSCALL, "io_setup failed\n");
         /*NOTREACHED*/
@@ -729,12 +731,25 @@ static void tip_init(struct thr_info *tip) {
         list_add_tail(&iocbp->head, &tip->free_iocbs);
     }
 
+    // printf("tip_init-part2\n");
+
     tip->naios_free = naios;
 
     open_devices(tip, device_fn);
+
+    // printf("tip_init-part3\n");
+
     init_addr_info(tip->ainfo);
+
+    // printf("tip_init-part4\n");
+
     init_queue(&tip->wq, 10240);
+
+    // printf("tip_init-part5\n");
+
     init_buf_space(&tip->bs);
+
+    // printf("tip_init-before recovery-finished!\n");
 
     if (pthread_create(&tip->sub_thread, NULL, replay_sub, tip)) {
         fatal("pthread_create", ERR_SYSCALL,
@@ -742,11 +757,15 @@ static void tip_init(struct thr_info *tip) {
         /*NOTREACHED*/
     }
 
+    // printf("tip_init-replay_sub-finished!\n");
+
     if (pthread_create(&tip->rec_thread, NULL, replay_rec, tip)) {
         fatal("pthread_create", ERR_SYSCALL,
               "thread create failed\n");
         /*NOTREACHED*/
     }
+
+    // printf("tip_init-replay_rec-finished!\n");
 }
 
 /**
@@ -1172,6 +1191,7 @@ void *foreground_request_sub(void *arg) {
  * Does rudimentary parameter verification as well.
  */
 static void handle_args(struct thr_info *tip, int argc, char *argv[]) {
+    // 共有9个参数
     if (argc != 10) {
         fprintf(stderr, "%s: method v k g chunk_size capacity devices_file trace_file requests_per_second\n", argv[0]);
         exit(1);
@@ -1179,33 +1199,42 @@ static void handle_args(struct thr_info *tip, int argc, char *argv[]) {
 
     struct addr_info *ainfo = (struct addr_info *) malloc(sizeof(struct addr_info));
 
+    // 方法类型
     ainfo->method = atoi(argv[1]);
 
+    // 参数v，对于RAID5，v表示磁盘数
     ainfo->v = atoi(argv[2]);
 
+    // 参数k，data + parity的数量
     ainfo->k = atoi(argv[3]);
 
+    // 参数g，暂时理解g与k相等
     ainfo->g = atoi(argv[4]);
 
-    ainfo->failedDisk = 9;
+    // 哪块磁盘有故障，由于磁盘总数有多种配置，所以这里将故障的磁盘从9号改成0号
+    ainfo->failedDisk = 0;
 
+    // RS的配置
     ainfo->n = 6;
     ainfo->m = 3;
 
+    // chunk_size, 单位KB
     ainfo->strip_size = atoi(argv[5]);  //KB
+    ainfo->strip_size *= 1024;          //转成B
 
-    ainfo->strip_size *= 1024;
-
+    // capacity, 单位是MB
     ainfo->capacity = atoi(argv[6]);    //MB
-
-    ainfo->capacity *= 1024 * 1024;
+    ainfo->capacity *= 1024 * 1024;     //转成B
 
     ainfo->max_stripes = CACHED_STRIPE_NUM;
 
+    // devices_file，文件记录了所有磁盘的盘符
     device_fn = argv[7];
 
+    // trace_file，trace文件，各种开源的trace
     ainfo->trace_fn = argv[8];
 
+    // requests_per_second
     ainfo->requestsPerSecond = atoi(argv[9]);
 
     tip->scount = tip->rcount = 0;
@@ -1251,6 +1280,9 @@ int main(int argc, char *argv[]) {
     int i;
 
     pgsize = getpagesize();
+
+    // printf("getpagesize finished!\n");
+
     assert(pgsize > 0);
 
     setup_signal(SIGINT, set_signal_done);
@@ -1262,8 +1294,12 @@ int main(int argc, char *argv[]) {
     get_ncpus();
     handle_args(&tip, argc, argv);
 
+    // printf("handle_args finished!\n");
+
     nfiles = 1;
     tip_init(&tip);
+
+    printf("tip_init finished!\n");
 
     wait_replays_ready();
 
