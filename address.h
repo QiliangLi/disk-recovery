@@ -710,7 +710,7 @@ void raid5_online_recover(struct thr_info *tip) {
     fprintf(stderr, "start recover [raid5], total size %fGB\n", ainfo->strips_partition * ainfo->strip_size * 1.0f / 1024 / 1024 / 1024);
 
     for(i = 0; i < 1; i++) {
-        // 共有strips_partition个任务
+        // 共有strips_partition个任务 
         for(j = 0; j < ainfo->strips_partition; j++) {
             if ((i * ainfo->strips_partition + j) % step == 0) {
                 int cur = (i * ainfo->strips_partition + j) / step;
