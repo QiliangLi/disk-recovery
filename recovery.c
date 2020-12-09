@@ -981,7 +981,7 @@ again:
         pthread_cond_signal(&tip->cond);
 
     } else if (tip->send_wait && tip->bs->left_stripes == 0) {
-        fprintf(stderr, "wakeup, next region\n");
+        fprintf(stdout, "wakeup, next region\n");
         tip->wait_all_finish = 0;
         tip->send_wait = 0;
         pthread_cond_signal(&tip->cond);

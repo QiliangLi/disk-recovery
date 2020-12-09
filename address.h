@@ -142,15 +142,15 @@ void init_parameters(struct addr_info *ainfo) {
         exit(1);
     }
 
-    fprintf(stderr, "capacity %fGB\n", ainfo->capacity * 1.0f / 1024 / 1024 / 1024);
+    fprintf(stdout, "capacity %fGB\n", ainfo->capacity * 1.0f / 1024 / 1024 / 1024);
     if (ainfo->method == 1)
-        fprintf(stderr, "recover size %fGB\n", ainfo->r * (ainfo->g - 1) * ainfo->strips_partition * ainfo->strip_size * 1.0f / 1024 / 1024 / 1024);
+        fprintf(stdout, "recover size %fGB\n", ainfo->r * (ainfo->g - 1) * ainfo->strips_partition * ainfo->strip_size * 1.0f / 1024 / 1024 / 1024);
     else if (ainfo->method == 3)
-        fprintf(stderr, "recover size %fGB\n", ainfo->g2 * ainfo->strips_partition * ainfo->strip_size * 1.0f / 1024 / 1024 / 1024);
+        fprintf(stdout, "recover size %fGB\n", ainfo->g2 * ainfo->strips_partition * ainfo->strip_size * 1.0f / 1024 / 1024 / 1024);
     else if (ainfo->method == 4)
-        fprintf(stderr, "recover size %fGB\n", ainfo->r * ainfo->strips_partition * ainfo->strip_size * 1.0f / 1024 / 1024 / 1024);
+        fprintf(stdout, "recover size %fGB\n", ainfo->r * ainfo->strips_partition * ainfo->strip_size * 1.0f / 1024 / 1024 / 1024);
     else
-        fprintf(stderr, "recover size %fGB\n", ainfo->capacity * 1.0f / 1024 / 1024 / 1024);
+        fprintf(stdout, "recover size %fGB\n", ainfo->capacity * 1.0f / 1024 / 1024 / 1024);
 }
 
 void init_addr_info(struct addr_info *ainfo) {
@@ -707,14 +707,18 @@ void raid5_online_recover(struct thr_info *tip) {
     }
 
     tip->bs->left_stripes = ainfo->max_stripes;
-    fprintf(stderr, "start recover [raid5], total size %fGB\n", ainfo->strips_partition * ainfo->strip_size * 1.0f / 1024 / 1024 / 1024);
+    fprintf(stdout, "start recover [raid5], total size %fGB\n", ainfo->strips_partition * ainfo->strip_size * 1.0f / 1024 / 1024 / 1024);
+    fprintf(stdout, "Recovery tasks number: %lld, chunk size: %f MB, step: %d\n", ainfo->strips_partition, ainfo->strip_size * 1.0f / 1024 / 1024, step);
 
     for(i = 0; i < 1; i++) {
         // 共有strips_partition个任务
         for(j = 0; j < ainfo->strips_partition; j++) {
+            
+            fprintf(stdout,"processed_stripes: %lld, j: %d\n", processed_stripes, j);
+
             if ((i * ainfo->strips_partition + j) % step == 0) {
                 int cur = (i * ainfo->strips_partition + j) / step;
-                fprintf(stderr, "progress %d/%d\n", cur, max);
+                fprintf(stdout, "progress %d/%d\n", cur, max);
             }
 
             if (processed_stripes != 0 && processed_stripes % ainfo->max_stripes == 0) {   //du64_to_sec(gettime() - last_time) >= 10
@@ -734,17 +738,21 @@ void raid5_online_recover(struct thr_info *tip) {
                 pthread_mutex_unlock(&tip->mutex);
             }
 
+            // ntodo是每个条带修复时需要读的IO数量，single disk failure的情况下是k-1
             int ntodo = ainfo->k - 1, ndone;
 
             for(k = 0; k < ainfo->k - 1; k++) {
                 reqs[k].type = 1;
                 reqs[k].disk_num = disks[k];
+                // offset退化成j * ainfo->blocks_per_strip * BLOCK
                 reqs[k].offset = (i * ainfo->blocks_partition + j * ainfo->blocks_per_strip) * BLOCK;
                 reqs[k].size = ainfo->strip_size;
+                // ainfo->max_stripes的值宏定义为CACHED_STRIPE_NUM=512
                 reqs[k].stripe_id = processed_stripes % ainfo->max_stripes;
             }
 
             tip->bs->left_nums[processed_stripes % ainfo->max_stripes] = ainfo->k - 1;
+            // 替代节点由于是一个完整的节点，于是就把替代节点设为failDisk
             tip->bs->disk_dst[processed_stripes % ainfo->max_stripes] = ainfo->failedDisk;
             tip->bs->offset_dst[processed_stripes % ainfo->max_stripes] = (i * ainfo->blocks_partition + j * ainfo->blocks_per_strip) * BLOCK;
             iocbs_map(tip, list, reqs, ntodo, 0);
@@ -775,6 +783,7 @@ void raid5_online_recover(struct thr_info *tip) {
 
             int reqest_count = 0;
 
+            // offline情况下ainfo->requestsPerSecond=0，所以不执行下面这一段
             while (reqest_count < ainfo->requestsPerSecond) {
                 int retCode;
                 retCode = fscanf(f, "%d,%d,%d,%c,%lf", &hostName, &logicAddr, &size, &op, &timeStamp);
