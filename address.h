@@ -555,6 +555,7 @@ void oi_raid_request(struct thr_info *tip, int logicAddr, int reqSize, char op )
 
 
 //访问21个磁盘的RAID5盘阵，每3个磁盘为一个2+1的RAID5
+// Online
 void raid5_3time7disks_request(struct thr_info *tip, int logicAddr, int reqSize, char op) {
     struct iocb *list[MAX_DEVICE_NUM];
     struct request_info reqs[MAX_DEVICE_NUM];
