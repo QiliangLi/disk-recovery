@@ -710,6 +710,8 @@ void raid5_online_recover(struct thr_info *tip) {
     fprintf(stdout, "start recover [raid5], total size %fGB\n", ainfo->strips_partition * ainfo->strip_size * 1.0f / 1024 / 1024 / 1024);
     fprintf(stdout, "Recovery tasks number: %lld, chunk size: %f MB, step: %d\n", ainfo->strips_partition, ainfo->strip_size * 1.0f / 1024 / 1024, step);
 
+    fprintf(stdout, "ainfo->blocks_partition=%d, ainfo->blocks_per_strip=%d\n", ainfo->blocks_partition, ainfo->blocks_per_strip);
+
     for(i = 0; i < 1; i++) {
         // 共有strips_partition个任务
         for(j = 0; j < ainfo->strips_partition; j++) {

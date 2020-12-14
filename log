@@ -1,8 +1,10 @@
+sudo ./recovery 0 7 3 3 4096 10240 devices.txt ../traces/Financial1.spc 0 > log
 capacity 10.000000GB
 recover size 10.000000GB
 tip_init finished!
 start recover [raid5], total size 10.000000GB
 Recovery tasks number: 2560, chunk size: 4.000000 MB, step: 25
+ainfo->blocks_partition=2621440, ainfo->blocks_per_strip=1024
 processed_stripes: 0, j: 0
 progress 0/100
 processed_stripes: 1, j: 1
