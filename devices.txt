@@ -5,3 +5,7 @@
 /dev/sdf
 /dev/sdg
 /dev/sdm
+/dev/sdn
+/dev/sdo
+/dev/sdp
+/dev/sdq

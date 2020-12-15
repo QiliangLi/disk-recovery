@@ -1,0 +1,116 @@
+tip->devices[0]=/dev/sdb
+tip->devices[1]=/dev/sdc
+tip->devices[2]=/dev/sdd
+tip->devices[3]=/dev/sde
+tip->devices[4]=/dev/sdf
+tip->devices[5]=/dev/sdg
+tip->devices[6]=/dev/sdm
+tip->devices[7]=/dev/sdn
+tip->devices[8]=/dev/sdo
+tip->devices[9]=/dev/sdp
+capacity 9.984375GB
+recover size 6.656250GB
+tip_init finished!
+reqs[0].disk_num = 3
+reqs[1].disk_num = 6
+reqs[2].disk_num = 4
+reqs[3].disk_num = 8
+reqs[4].disk_num = 9
+reqs[5].disk_num = 12
+reqs[6].disk_num = 10
+reqs[7].disk_num = 14
+reqs[8].disk_num = 15
+reqs[9].disk_num = 21
+reqs[10].disk_num = 16
+reqs[11].disk_num = 23
+reqs[12].disk_num = 18
+reqs[13].disk_num = 24
+reqs[14].disk_num = 19
+reqs[15].disk_num = 26
+#################
+reqs[0].disk_num = 1
+reqs[1].disk_num = 2
+reqs[2].disk_num = 3
+reqs[3].disk_num = 4
+reqs[4].disk_num = 5
+reqs[5].disk_num = 6
+reqs[6].disk_num = 7
+reqs[7].disk_num = 8
+reqs[8].disk_num = 0
+reqs[9].disk_num = 1
+reqs[10].disk_num = 2
+reqs[11].disk_num = 3
+reqs[12].disk_num = 4
+reqs[13].disk_num = 5
+reqs[14].disk_num = 6
+reqs[15].disk_num = 7
+tip->naios_free:256
+pkt->disk_num: 0, tip->devices[pkt->disk_num]: 4, rw: 1, pkt->size: 4194304, pkt->offset: 0
+pkt->disk_num: 1, tip->devices[pkt->disk_num]: 5, rw: 1, pkt->size: 4194304, pkt->offset: 0
+pkt->disk_num: 2, tip->devices[pkt->disk_num]: 6, rw: 1, pkt->size: 4194304, pkt->offset: 893386752
+pkt->disk_num: 3, tip->devices[pkt->disk_num]: 7, rw: 1, pkt->size: 4194304, pkt->offset: 893386752
+pkt->disk_num: 4, tip->devices[pkt->disk_num]: 8, rw: 1, pkt->size: 4194304, pkt->offset: 0
+pkt->disk_num: 5, tip->devices[pkt->disk_num]: 9, rw: 1, pkt->size: 4194304, pkt->offset: 0
+pkt->disk_num: 6, tip->devices[pkt->disk_num]: 10, rw: 1, pkt->size: 4194304, pkt->offset: 893386752
+pkt->disk_num: 7, tip->devices[pkt->disk_num]: 11, rw: 1, pkt->size: 4194304, pkt->offset: 893386752
+pkt->disk_num: 8, tip->devices[pkt->disk_num]: 12, rw: 1, pkt->size: 4194304, pkt->offset: 5360320512
+pkt->disk_num: 0, tip->devices[pkt->disk_num]: 4, rw: 1, pkt->size: 4194304, pkt->offset: 2680160256
+pkt->disk_num: 1, tip->devices[pkt->disk_num]: 5, rw: 1, pkt->size: 4194304, pkt->offset: 6253707264
+pkt->disk_num: 2, tip->devices[pkt->disk_num]: 6, rw: 1, pkt->size: 4194304, pkt->offset: 3573547008
+pkt->disk_num: 3, tip->devices[pkt->disk_num]: 7, rw: 1, pkt->size: 4194304, pkt->offset: 8040480768
+pkt->disk_num: 4, tip->devices[pkt->disk_num]: 8, rw: 1, pkt->size: 4194304, pkt->offset: 8040480768
+pkt->disk_num: 5, tip->devices[pkt->disk_num]: 9, rw: 1, pkt->size: 4194304, pkt->offset: 8933867520
+pkt->disk_num: 6, tip->devices[pkt->disk_num]: 10, rw: 1, pkt->size: 4194304, pkt->offset: 8933867520
+ndone: 16, req_count: 16
+reqs[0].disk_num = 3
+reqs[1].disk_num = 6
+reqs[2].disk_num = 4
+reqs[3].disk_num = 8
+reqs[4].disk_num = 9
+reqs[5].disk_num = 12
+reqs[6].disk_num = 10
+reqs[7].disk_num = 14
+reqs[8].disk_num = 15
+reqs[9].disk_num = 21
+reqs[10].disk_num = 16
+reqs[11].disk_num = 23
+reqs[12].disk_num = 18
+reqs[13].disk_num = 24
+reqs[14].disk_num = 19
+reqs[15].disk_num = 26
+#################
+reqs[0].disk_num = 1
+reqs[1].disk_num = 2
+reqs[2].disk_num = 3
+reqs[3].disk_num = 4
+reqs[4].disk_num = 5
+reqs[5].disk_num = 6
+reqs[6].disk_num = 7
+reqs[7].disk_num = 8
+reqs[8].disk_num = 0
+reqs[9].disk_num = 1
+reqs[10].disk_num = 2
+reqs[11].disk_num = 3
+reqs[12].disk_num = 4
+reqs[13].disk_num = 5
+reqs[14].disk_num = 6
+reqs[15].disk_num = 7
+tip->naios_free:240
+pkt->disk_num: 0, tip->devices[pkt->disk_num]: 4, rw: 1, pkt->size: 4194304, pkt->offset: 4194304
+pkt->disk_num: 1, tip->devices[pkt->disk_num]: 5, rw: 1, pkt->size: 4194304, pkt->offset: 4194304
+pkt->disk_num: 2, tip->devices[pkt->disk_num]: 6, rw: 1, pkt->size: 4194304, pkt->offset: 897581056
+pkt->disk_num: 3, tip->devices[pkt->disk_num]: 7, rw: 1, pkt->size: 4194304, pkt->offset: 897581056
+pkt->disk_num: 4, tip->devices[pkt->disk_num]: 8, rw: 1, pkt->size: 4194304, pkt->offset: 4194304
+pkt->disk_num: 5, tip->devices[pkt->disk_num]: 9, rw: 1, pkt->size: 4194304, pkt->offset: 4194304
+pkt->disk_num: 6, tip->devices[pkt->disk_num]: 10, rw: 1, pkt->size: 4194304, pkt->offset: 897581056
+pkt->disk_num: 7, tip->devices[pkt->disk_num]: 11, rw: 1, pkt->size: 4194304, pkt->offset: 897581056
+pkt->disk_num: 8, tip->devices[pkt->disk_num]: 12, rw: 1, pkt->size: 4194304, pkt->offset: 5364514816
+pkt->disk_num: 0, tip->devices[pkt->disk_num]: 4, rw: 1, pkt->size: 4194304, pkt->offset: 2684354560
+pkt->disk_num: 1, tip->devices[pkt->disk_num]: 5, rw: 1, pkt->size: 4194304, pkt->offset: 6257901568
+pkt->disk_num: 2, tip->devices[pkt->disk_num]: 6, rw: 1, pkt->size: 4194304, pkt->offset: 3577741312
+pkt->disk_num: 3, tip->devices[pkt->disk_num]: 7, rw: 1, pkt->size: 4194304, pkt->offset: 8044675072
+pkt->disk_num: 4, tip->devices[pkt->disk_num]: 8, rw: 1, pkt->size: 4194304, pkt->offset: 8044675072
+pkt->disk_num: 5, tip->devices[pkt->disk_num]: 9, rw: 1, pkt->size: 4194304, pkt->offset: 8938061824
+pkt->disk_num: 6, tip->devices[pkt->disk_num]: 10, rw: 1, pkt->size: 4194304, pkt->offset: 8938061824
+tip->naios_free:225
+pkt->disk_num: 11, tip->devices[pkt->disk_num]: 0, rw: 0, pkt->size: 4194304, pkt->offset: 10720641024

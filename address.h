@@ -27,8 +27,10 @@ struct addr_info {
 
 int requestPerSecond = 0;
 
+// diskArray和offsetArray：二维数组，第一维是条带编号，第二维是条带内的chunk编号，值为磁盘编号/偏移量（分区号）
 int **diskArray;           //子阵列对应的 磁盘号
 int **offsetArray;         //子阵列对应的 偏移量（分区号）
+// diskRegion：二维数组，第一维是磁盘编号，第二维是每个磁盘的第几个region（chunk），值为region（chunk）的编号
 int **diskRegion;          //每个disk包含的Region号
 
 void makeSubRAID(struct addr_info *ainfo);
@@ -186,7 +188,6 @@ void init_addr_info(struct addr_info *ainfo) {
     else if (ainfo->method == 4)
         region_nums = ainfo->r;
 
-    // diskArray和offsetArray：二维数组，第一维是条带数，第二维是条带宽度
     diskArray = (typeof(diskArray)) malloc(sizeof(typeof(*diskArray)) * stripe_nums);
     offsetArray = (typeof(offsetArray)) malloc(sizeof(typeof(*offsetArray)) * stripe_nums);
 
@@ -195,7 +196,6 @@ void init_addr_info(struct addr_info *ainfo) {
         offsetArray[i] = (typeof(*offsetArray)) malloc(sizeof(typeof(**offsetArray)) * ainfo->k);
     }
 
-    // diskRegion：二维数组，第一维是磁盘数，第二维是每个磁盘拥有的region数
     diskRegion = (typeof(diskRegion)) malloc(sizeof(typeof(*diskRegion)) * ainfo->disk_nums);
 
     for (i = 0; i < ainfo->disk_nums; i++) {
@@ -815,6 +815,7 @@ void raid5_online_recover(struct thr_info *tip) {
     free(disks);
 }
 
+// RS码的单盘修复
 void rs_online_recover(struct thr_info *tip) {
     struct iocb *list[MAX_DEVICE_NUM];
     long long last_time = gettime();
@@ -842,6 +843,7 @@ void rs_online_recover(struct thr_info *tip) {
 
     j = 0;
 
+    // n+m-1的前n个磁盘作为source disk
     for(i = 0; i < ainfo->n + ainfo->m && j < ainfo->n; i++) {
         if(inGroupId == i)
             continue;
@@ -1065,6 +1067,8 @@ void oi_raid_online_recover(struct thr_info *tip) {
                 reqs[req_count].offset = (offsets[j][k] * ainfo->blocks_partition + i * ainfo->blocks_per_strip) * BLOCK;
                 reqs[req_count].size = ainfo->strip_size;
                 reqs[req_count].stripe_id = processed_stripes % ainfo->max_stripes;
+
+                printf("reqs[%d].disk_num = %d\n", req_count, disks[j][k]);
                 req_count++;
             }
 
@@ -1076,9 +1080,18 @@ void oi_raid_online_recover(struct thr_info *tip) {
             processed_stripes++;
         }
 
+        printf("#################\n");
+        int a,cc=0;
+        for(a=0;a<16;a++){
+            reqs[a].disk_num=cc++%9;
+            printf("reqs[%d].disk_num = %d\n", a, cc%9);
+        }
+
         iocbs_map(tip, list, reqs, req_count, 0);
 
         int ndone = io_submit(tip->ctx, req_count, list);
+
+        printf("ndone: %d, req_count: %d\n", ndone, req_count);
 
         if (ndone != req_count) {
             fatal("io_submit", ERR_SYSCALL,
@@ -1364,6 +1377,8 @@ void parity_declustering_online_recover(struct thr_info *tip) {
         }
     }
 
+    // 将source disk从spare disk中删掉
+    // spareDisks=0表示该磁盘未作为source disk，spareDisks=1表示该磁盘作为source disk，
     int spareDisks[MAX_DEVICE_NUM] = {0};
     int spareMap[MAX_DEVICE_NUM], spareDiskNum = ainfo->disk_nums;
     for (j = 0; j < ainfo->r; j++) {

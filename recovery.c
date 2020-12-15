@@ -660,6 +660,8 @@ void open_devices(struct thr_info *tip, char *device_fn) {
                     exit(1);
                 }
 
+                printf("tip->devices[%d]=%s\n", i, s);
+
             } else { // is a normal file anyway
                 int blk_flags = O_CREAT | O_RDWR | O_LARGEFILE;
                 tip->devices[i] = open(s, blk_flags);
@@ -1077,11 +1079,11 @@ int iocbs_map(struct thr_info *tip, struct iocb **list,
         pthread_mutex_unlock(&tip->mutex);
         return 0;
     }
-
+    printf("tip->naios_free:%d\n",tip->naios_free);
     for (i = 0, pkt = pkts; i < ntodo; i++, pkt++) {
         while (tip->naios_free < 1) {
             tip->send_wait = 1;
-
+            printf("Testttttt\n");
             // fprintf(stderr, "error? send thread wait now!\n");
             if (pthread_cond_wait(&tip->cond, &tip->mutex)) {
                 fatal("pthread_cond_wait", ERR_SYSCALL,
@@ -1096,6 +1098,7 @@ int iocbs_map(struct thr_info *tip, struct iocb **list,
         struct iocb_pkt *iocbp;
 
         iocbp = list_entry(tip->free_iocbs.next, struct iocb_pkt, head);
+        printf("pkt->disk_num: %d, tip->devices[pkt->disk_num]: %d, rw: %d, pkt->size: %d, pkt->offset: %lld\n", pkt->disk_num, tip->devices[pkt->disk_num], rw, pkt->size, pkt->offset);
         iocb_setup(iocbp, tip->devices[pkt->disk_num], rw, pkt->size, pkt->offset);
 
         iocbp->op = rw ? 'R' : 'W';
