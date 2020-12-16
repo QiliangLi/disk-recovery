@@ -711,7 +711,7 @@ static void tip_init(struct thr_info *tip) {
     pthread_mutex_init(&tip->mutex, NULL);
     pthread_cond_init(&tip->cond, NULL);
 
-    // printf("tip_init-part1\n");
+    printf("tip_init-part1\n");
 
     if (io_setup(naios, &tip->ctx)) {
         fatal("io_setup", ERR_SYSCALL, "io_setup failed\n");
@@ -733,25 +733,25 @@ static void tip_init(struct thr_info *tip) {
         list_add_tail(&iocbp->head, &tip->free_iocbs);
     }
 
-    // printf("tip_init-part2\n");
+    printf("tip_init-part2\n");
 
     tip->naios_free = naios;
 
     open_devices(tip, device_fn);
 
-    // printf("tip_init-part3\n");
+    printf("tip_init-part3\n");
 
     init_addr_info(tip->ainfo);
 
-    // printf("tip_init-part4\n");
+    printf("tip_init-part4\n");
 
     init_queue(&tip->wq, 10240);
 
-    // printf("tip_init-part5\n");
+    printf("tip_init-part5\n");
 
     init_buf_space(&tip->bs);
 
-    // printf("tip_init-before recovery-finished!\n");
+    printf("tip_init-before recovery-finished!\n");
 
     if (pthread_create(&tip->sub_thread, NULL, replay_sub, tip)) {
         fatal("pthread_create", ERR_SYSCALL,
@@ -1297,7 +1297,7 @@ int main(int argc, char *argv[]) {
     get_ncpus();
     handle_args(&tip, argc, argv);
 
-    // printf("handle_args finished!\n");
+    printf("handle_args finished!\n");
 
     nfiles = 1;
     tip_init(&tip);

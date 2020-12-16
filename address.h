@@ -1080,12 +1080,14 @@ void oi_raid_online_recover(struct thr_info *tip) {
             processed_stripes++;
         }
 
-        printf("#################\n");
-        int a,cc=0;
-        for(a=0;a<16;a++){
-            reqs[a].disk_num=cc++%9;
-            printf("reqs[%d].disk_num = %d\n", a, cc%9);
-        }
+        // 发现oi-raid运行出现各种io问题后加的测试代码，发现代码会读取的磁盘数和我理解的不一样
+        // 需要的磁盘数远远比我想象中的要多，最小的73BIBD都需要21块盘
+        // printf("#################\n");
+        // int a,cc=0;
+        // for(a=0;a<16;a++){
+        //     reqs[a].disk_num=cc++%9;
+        //     printf("reqs[%d].disk_num = %d\n", a, cc%9);
+        // }
 
         iocbs_map(tip, list, reqs, req_count, 0);
 
